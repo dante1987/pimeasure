@@ -24,7 +24,7 @@ class Daemon(object):
         self.umask = umask
         self.workdir = workdir
 
-    def daemonize(self):
+    def demonize(self):
         try:
             pid = os.fork()
             if pid > 0:
@@ -34,7 +34,7 @@ class Daemon(object):
             sys.stderr.write('Fork #1 failed: {} ({})'.format(e.errno, e.strerror))
             sys.exit(1)
 
-        # decouople from parent environment
+        # decouple from parent environment
         os.chdir(self.workdir)
         os.setsid()
         os.umask(self.umask)
@@ -53,20 +53,20 @@ class Daemon(object):
         sys.stdout.flush()
         sys.stderr.flush()
         si = open(self.stdin, 'r')
-        so = open(self.stdout, 'a+')
-        se = open(self.stderr, 'a+')
+        so = open(self.stdout, 'a')
+        se = open(self.stderr, 'a')
         os.dup2(si.fileno(), sys.stdin.fileno())
         os.dup2(so.fileno(), sys.stdout.fileno())
         os.dup2(se.fileno(), sys.stderr.fileno())
 
-        #write pidfile
-        atexit.register(self.delpid)
+        # write pidfile
+        atexit.register(self.delete_pid_file)
         pid = str(os.getpid())
 
-        with open(self.pidfile, 'w+') as pidfil:
-            pidfil.write('{}\n'.format(pid))
+        with open(self.pidfile, 'w+') as pidfile:
+            pidfile.write('{}\n'.format(pid))
 
-    def delpid(self):
+    def delete_pid_file(self):
         if os.path.exists(self.pidfile):
             os.remove(self.pidfile)
 
@@ -94,7 +94,7 @@ class Daemon(object):
             sys.stderr.write(message)
             sys.exit(1)
 
-        self.daemonize()
+        self.demonize()
         self.run()
 
     def stop(self):
@@ -113,7 +113,7 @@ class Daemon(object):
         except OSError, err:
             err = str(err)
             if "No such process" in err:
-                self.delpid()
+                self.delete_pid_file()
             else:
                 print(str(err))
                 sys.exit(1)
@@ -124,7 +124,7 @@ class Daemon(object):
 
     def run(self):
         """
-        Do the actual task of the daemon. This should be overriden by
+        Do the actual task of the daemon. This should be overridden by
         :return:
         """
         raise NotImplementedError
