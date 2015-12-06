@@ -6,7 +6,7 @@ import datetime
 
 import time
 
-from demon import Daemon
+from demon.demon import Daemon
 
 PID_FILE = '/users/krzysztofskarupa/Desktop/pimeasure_logs/pidfile.pid'
 WORKDIR = '/users/krzysztofskarupa/Desktop/pimeasure_logs/'
