@@ -1,12 +1,12 @@
-import argparse
 import ConfigParser
-import os.path
-import sys
+import argparse
 import datetime
-
-import time
+import os.path
+import socket
+import sys
 
 from demon.demon import Daemon
+from udp.constants import PORT
 
 PID_FILE = '/users/krzysztofskarupa/Desktop/pimeasure_logs/pidfile.pid'
 WORKDIR = '/users/krzysztofskarupa/Desktop/pimeasure_logs/'
@@ -27,12 +27,17 @@ class PiMeasureDaemon(Daemon):
         del kwargs['communication_port']
         super(PiMeasureDaemon, self).__init__(**kwargs)
 
+        # this and other pieces of code related to udp communication could go to separate mixin - for consideration
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     def run(self):
+        self.socket.bind(("", PORT))
         while True:
-            time.sleep(2)
+            data, host = self.socket.recvfrom(1024)
             today = datetime.datetime.today()
             with open(self.output_file, 'a') as the_file:
-                the_file.write(today.strftime('%D %H:%M:%S\n'))
+                message = '{time} - {msg} - {host}'.format(time=today.strftime('%D %H:%M:%S\n'), msg=data, host=host)
+                the_file.write(message)
 
 
 def check_config(config):
