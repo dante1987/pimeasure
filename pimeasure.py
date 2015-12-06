@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Process config file path and command")
     parser.add_argument('--config', '-c', dest='config_path', help="Path to the config file", required=True)
-    parser.add_argument('--command', '-d', dest='command', choices=['start', 'stop', 'restart'],
+    parser.add_argument('--command', '-d', dest='command', choices=['start', 'stop', 'restart', 'status'],
                         help='Command: start, stop or restart', required=True)
 
     args = parser.parse_args()
@@ -100,5 +100,11 @@ if __name__ == '__main__':
         demon.start()
     elif command == 'stop':
         demon.stop()
+    elif command == 'status':
+        is_running = demon.get_status()
+        if is_running:
+            print('The daemon is running')
+        else:
+            print('The daemon is not running')
     else:
         demon.restart()

@@ -118,6 +118,22 @@ class Daemon(object):
                 print(str(err))
                 sys.exit(1)
 
+    def get_status(self):
+        """
+        Check if the daemon is running.
+
+        :return type bool
+        return True if process is running else False
+        """
+        if not os.path.exists(self.pidfile):
+            return False
+        try:
+            os.kill(self._get_pid(), 0)
+        except OSError:
+            return False
+        else:
+            return True
+
     def restart(self):
         self.stop()
         self.start()
