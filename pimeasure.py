@@ -7,11 +7,8 @@ import sys
 
 from demon.demon import Daemon
 from udp.constants import PORT
+from rangefinder import mock as rangefinder
 
-PID_FILE = '/users/krzysztofskarupa/Desktop/pimeasure_logs/pidfile.pid'
-WORKDIR = '/users/krzysztofskarupa/Desktop/pimeasure_logs/'
-STDOUT = '/users/krzysztofskarupa/Desktop/pimeasure_logs/stdout.txt'
-STDERR = '/users/krzysztofskarupa/Desktop/pimeasure_logs/stderr.txt'
 CONFIG_SECTION_NAME = 'general'
 EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port',
                         'output_file')  # output file is only for test purpose
@@ -30,10 +27,39 @@ class PiMeasureDaemon(Daemon):
         # this and other pieces of code related to udp communication could go to separate mixin - for consideration
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+    def send_values(self, to_send):
+        message = ';'.join(to_send)
+        self.socket.sendto(message, (self.communication_ip, self.communication_port))
+
+    def action_single(self, checksum):
+        values = rangefinder.get_values()
+        to_send = [0] + list(values) + [checksum]
+        self.send_values(to_send)
+
+    # continuous?
+    def action_continous(self, checksum):
+        # check multiprocessing section in python standard library documentation and implement getting those values from
+        # separate process. Also, set some time intervals here, as we have to clarify how we will get them.
+        pass
+
+    def dispatch(self, data):
+        """
+        :param string data:
+        :return:
+        """
+        arguments = data.split(';')
+        action_name = 'action_{}'.format(arguments[0])
+        action_args = arguments[1:]
+
+        if hasattr(self, action_name):
+            return getattr(self, action_name)(*action_args)
+        sys.stderr.write('Wrong method passed on the network: {}'.format(arguments[0]))
+
     def run(self):
         self.socket.bind(("", PORT))
         while True:
             data, host = self.socket.recvfrom(1024)
+            self.dispatch(data)
             today = datetime.datetime.today()
             with open(self.output_file, 'a') as the_file:
                 message = '{time} - {msg} - {host}'.format(time=today.strftime('%D %H:%M:%S\n'), msg=data, host=host)
