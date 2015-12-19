@@ -4,6 +4,9 @@ import datetime
 import os.path
 import socket
 import sys
+import time
+from multiprocessing import Process, Queue
+from itertools import chain
 
 from demon.demon import Daemon
 from udp.constants import PORT
@@ -12,6 +15,37 @@ from rangefinder import mock as rangefinder
 CONFIG_SECTION_NAME = 'general'
 EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port',
                         'output_file')  # output file is only for test purpose
+
+
+def get_time_intervals():
+    return [1, 2, 3, 4, 5]
+
+
+def continous_measure(queue, time_intervals, checksum):
+    """
+    Performs continuous measure with given time intervals between single measures.
+
+    :param list time_intervals:
+    :param Queue queue:
+    :param str checksum:
+    :return:
+    """
+    # this method needs its own sender class to not have to communicate with the main process
+    results = rangefinder.get_values()
+
+    while not any(results):
+        results = rangefinder.get_values()
+
+    counter = 1
+
+    queue.put(list(chain([counter], results, [])))
+
+    for interval in time_intervals:
+        counter += 1
+        time.sleep(interval)
+        results = rangefinder.get_values()
+        queue.put(list(chain([counter], results, [checksum])))
+    queue.put(False)
 
 
 class PiMeasureDaemon(Daemon):
@@ -40,7 +74,20 @@ class PiMeasureDaemon(Daemon):
     def action_continous(self, checksum):
         # check multiprocessing section in python standard library documentation and implement getting those values from
         # separate process. Also, set some time intervals here, as we have to clarify how we will get them.
-        pass
+        time_intervals = get_time_intervals()
+        queue = Queue()
+        process = Process(target=continous_measure, args=(queue, time_intervals, checksum))
+        process.start()
+
+        while True:
+            result = queue.get()
+
+            if result is False:
+                break
+
+            self.send_values(result)
+
+        process.join()
 
     def dispatch(self, data):
         """
@@ -57,6 +104,11 @@ class PiMeasureDaemon(Daemon):
 
     def run(self):
         self.socket.bind(("", PORT))
+        # change to do here:
+        # continuous measure should return process object here
+        # do not join immediately - instead listen for data from network
+        # if anything comes from the network, check if the process is alive - if it's still working, terminate
+        # a sender class should be separated from this daemon and measuring functions should create their own senders
         while True:
             data, host = self.socket.recvfrom(1024)
             self.dispatch(data)

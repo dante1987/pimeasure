@@ -5,7 +5,7 @@ NUM_OF_RANGEFINDERS = 6
 
 
 def get_values():
-    return tuple([randint(0, MAX_VALUE) for _ in range(NUM_OF_RANGEFINDERS)])
+    return [randint(0, MAX_VALUE) for _ in range(NUM_OF_RANGEFINDERS)]
 
 
 def get_values_long():
