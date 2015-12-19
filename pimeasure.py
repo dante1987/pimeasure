@@ -5,32 +5,32 @@ import os.path
 import socket
 import sys
 import time
-from multiprocessing import Process, Queue
-from itertools import chain
+from multiprocessing import Process
 
 from demon.demon import Daemon
-from udp.constants import PORT
 from rangefinder import mock as rangefinder
+from udp.constants import PORT
 
 CONFIG_SECTION_NAME = 'general'
 EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port',
                         'output_file')  # output file is only for test purpose
 
 
+def send_values(to_send, communication_socket, communication_ip, communication_port):
+    message = ';'.join(to_send)
+    communication_socket.sendto(message, (communication_ip, communication_port))
+
+
 def get_time_intervals():
     return [1, 2, 3, 4, 5]
 
 
-def continous_measure(queue, time_intervals, checksum):
-    """
-    Performs continuous measure with given time intervals between single measures.
-
-    :param list time_intervals:
-    :param Queue queue:
-    :param str checksum:
-    :return:
-    """
+def continuous_measure(time_intervals, checksum, communication_data):
     # this method needs its own sender class to not have to communicate with the main process
+    communication_socket = communication_data['socket']
+    communication_ip = communication_data['ip']
+    communication_port = communication_data['port']
+
     results = rangefinder.get_values()
 
     while not any(results):
@@ -38,14 +38,12 @@ def continous_measure(queue, time_intervals, checksum):
 
     counter = 1
 
-    queue.put(list(chain([counter], results, [])))
-
     for interval in time_intervals:
         counter += 1
         time.sleep(interval)
         results = rangefinder.get_values()
-        queue.put(list(chain([counter], results, [checksum])))
-    queue.put(False)
+        to_send = [1] + list(results) + [checksum]
+        send_values(to_send, communication_socket, communication_ip, communication_port)
 
 
 class PiMeasureDaemon(Daemon):
@@ -71,21 +69,15 @@ class PiMeasureDaemon(Daemon):
         self.send_values(to_send)
 
     # continuous?
-    def action_continous(self, checksum):
-        # check multiprocessing section in python standard library documentation and implement getting those values from
-        # separate process. Also, set some time intervals here, as we have to clarify how we will get them.
+    def action_continuous(self, checksum):
         time_intervals = get_time_intervals()
-        queue = Queue()
-        process = Process(target=continous_measure, args=(queue, time_intervals, checksum))
+        communication_data = {
+            'socket': self.socket,
+            'ip': self.communication_ip,
+            'port': self.communication_port,
+        }
+        process = Process(target=continuous_measure, args=(time_intervals, checksum, communication_data))
         process.start()
-
-        while True:
-            result = queue.get()
-
-            if result is False:
-                break
-
-            self.send_values(result)
 
         process.join()
 
