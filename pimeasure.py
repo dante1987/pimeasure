@@ -2,6 +2,7 @@ import ConfigParser
 import argparse
 import datetime
 import os.path
+import itertools
 import socket
 import sys
 import time
@@ -12,8 +13,8 @@ from rangefinder import mock as rangefinder
 from udp.constants import PORT
 
 CONFIG_SECTION_NAME = 'general'
-EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port',
-                        'output_file')  # output file is only for test purpose
+EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port')
+OPTIONAL_CONFIG_KEYS = ('log_file', 'logging_enabled', 'output_file')
 
 
 def send_values(to_send, communication_socket, communication_ip, communication_port):
@@ -51,14 +52,27 @@ class PiMeasureDaemon(Daemon):
         self.output_file = kwargs['output_file']
         self.communication_ip = kwargs['communication_ip']
         self.communication_port = kwargs['communication_port']
+        self.log_file = kwargs.get('log_file')
+        self.logging_enabled = self.log_file is not None and kwargs.get('logging_enabled', False)
         del kwargs['output_file']
         del kwargs['communication_ip']
         del kwargs['communication_port']
+        del kwargs['logging_enabled']
+        del kwargs['log_file']
         super(PiMeasureDaemon, self).__init__(**kwargs)
 
         # this and other pieces of code related to udp communication could go to separate mixin - for consideration
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.running_process = None
+
+    def log(self, message):
+        if not self.logging_enabled:
+            return
+
+        if not message.endswith('\n'):
+            message = ''.join([message, '\n'])
+        with open(self.log_file, 'a') as log_file:
+            log_file.write(message)
 
     def send_values(self, to_send):
         message = ';'.join(to_send)
@@ -144,7 +158,7 @@ def get_config_values(config):
     :rtype: dict
     """
     result = []
-    for key in EXPECTED_CONFIG_KEYS:
+    for key in itertools.chain(EXPECTED_CONFIG_KEYS, OPTIONAL_CONFIG_KEYS):
         result.append((key, config.get(CONFIG_SECTION_NAME, key)))
     return dict(result)
 
