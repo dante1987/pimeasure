@@ -58,6 +58,7 @@ class PiMeasureDaemon(Daemon):
 
         # this and other pieces of code related to udp communication could go to separate mixin - for consideration
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.running_process = None
 
     def send_values(self, to_send):
         message = ';'.join(to_send)
@@ -70,6 +71,8 @@ class PiMeasureDaemon(Daemon):
 
     # continuous?
     def action_continuous(self, checksum):
+        if self.running_process is not None and self.running_process.is_alive():
+            self.running_process.terminate()
         time_intervals = get_time_intervals()
         communication_data = {
             'socket': self.socket,
@@ -79,7 +82,7 @@ class PiMeasureDaemon(Daemon):
         process = Process(target=continuous_measure, args=(time_intervals, checksum, communication_data))
         process.start()
 
-        process.join()
+        self.running_process = process
 
     def dispatch(self, data):
         """
