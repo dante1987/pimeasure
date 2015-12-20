@@ -12,7 +12,8 @@ from demon.demon import Daemon
 from rangefinder import mock as rangefinder
 
 CONFIG_SECTION_NAME = 'general'
-EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port')
+EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port',
+                        'time_intervals')
 OPTIONAL_CONFIG_KEYS = ('log_file', 'logging_enabled', 'output_file')
 
 
@@ -51,11 +52,13 @@ class PiMeasureDaemon(Daemon):
         self.output_file = kwargs['output_file']
         self.communication_ip = kwargs['communication_ip']
         self.communication_port = int(kwargs['communication_port'])
+        self.time_intervals = [int(interval) for interval in kwargs['time_intervals'].split(',')]
         self.log_file = kwargs.get('log_file')
         self.logging_enabled = self.log_file is not None and bool(int(kwargs.get('logging_enabled', '0')))
         del kwargs['output_file']
         del kwargs['communication_ip']
         del kwargs['communication_port']
+        del kwargs['time_intervals']
         del kwargs['logging_enabled']
         del kwargs['log_file']
         super(PiMeasureDaemon, self).__init__(**kwargs)
@@ -90,13 +93,12 @@ class PiMeasureDaemon(Daemon):
         if self.running_process is not None and self.running_process.is_alive():
             self.log('A process is already running - terminating it')
             self.running_process.terminate()
-        time_intervals = get_time_intervals()
         communication_data = {
             'socket': self.socket,
             'ip': self.communication_ip,
             'port': self.communication_port,
         }
-        process = Process(target=continuous_measure, args=(time_intervals, checksum, communication_data))
+        process = Process(target=continuous_measure, args=(self.time_intervals, checksum, communication_data))
         self.log('Starting the process')
         process.start()
 
