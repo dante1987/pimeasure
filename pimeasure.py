@@ -10,7 +10,6 @@ from multiprocessing import Process
 
 from demon.demon import Daemon
 from rangefinder import mock as rangefinder
-from udp.constants import PORT
 
 CONFIG_SECTION_NAME = 'general'
 EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port')
@@ -43,7 +42,8 @@ def continuous_measure(time_intervals, checksum, communication_data):
         counter += 1
         time.sleep(interval)
         results = rangefinder.get_values()
-        to_send = [1] + list(results) + [checksum]
+        results = [str(result) for result in results]
+        to_send = ['1'] + list(results) + [checksum]
         send_values(to_send, communication_socket, communication_ip, communication_port)
 
 
@@ -51,7 +51,7 @@ class PiMeasureDaemon(Daemon):
     def __init__(self, **kwargs):
         self.output_file = kwargs['output_file']
         self.communication_ip = kwargs['communication_ip']
-        self.communication_port = kwargs['communication_port']
+        self.communication_port = int(kwargs['communication_port'])
         self.log_file = kwargs.get('log_file')
         self.logging_enabled = self.log_file is not None and kwargs.get('logging_enabled', False)
         del kwargs['output_file']
@@ -79,13 +79,18 @@ class PiMeasureDaemon(Daemon):
         self.socket.sendto(message, (self.communication_ip, self.communication_port))
 
     def action_single(self, checksum):
+        self.log('Starting single')
         values = rangefinder.get_values()
-        to_send = [0] + list(values) + [checksum]
+        values = [str(value) for value in values]
+        to_send = ['0'] + list(values) + [checksum]
+        self.log('Sending values for single')
         self.send_values(to_send)
 
     # continuous?
-    def action_continuous(self, checksum):
+    def action_continous(self, checksum):
+        self.log('Starting continuous')
         if self.running_process is not None and self.running_process.is_alive():
+            self.log('A process is already running - terminating it')
             self.running_process.terminate()
         time_intervals = get_time_intervals()
         communication_data = {
@@ -94,6 +99,7 @@ class PiMeasureDaemon(Daemon):
             'port': self.communication_port,
         }
         process = Process(target=continuous_measure, args=(time_intervals, checksum, communication_data))
+        self.log('Starting the process')
         process.start()
 
         self.running_process = process
@@ -112,14 +118,18 @@ class PiMeasureDaemon(Daemon):
         sys.stderr.write('Wrong method passed on the network: {}'.format(arguments[0]))
 
     def run(self):
-        self.socket.bind(("", PORT))
+        self.socket.bind(("", self.communication_port))
+        self.log("Listening on port {port}".format(port=self.communication_port))
         # change to do here:
         # continuous measure should return process object here
         # do not join immediately - instead listen for data from network
         # if anything comes from the network, check if the process is alive - if it's still working, terminate
         # a sender class should be separated from this daemon and measuring functions should create their own senders
+        self.log('Started')
         while True:
+            self.log('iteration begins')
             data, host = self.socket.recvfrom(1024)
+            self.log('Received a message: host: {host}, data: {data}'.format(host=host, data=data))
             self.dispatch(data)
             today = datetime.datetime.today()
             with open(self.output_file, 'a') as the_file:
