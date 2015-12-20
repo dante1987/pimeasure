@@ -53,7 +53,7 @@ class PiMeasureDaemon(Daemon):
         self.communication_ip = kwargs['communication_ip']
         self.communication_port = int(kwargs['communication_port'])
         self.log_file = kwargs.get('log_file')
-        self.logging_enabled = self.log_file is not None and kwargs.get('logging_enabled', False)
+        self.logging_enabled = self.log_file is not None and bool(int(kwargs.get('logging_enabled', '0')))
         del kwargs['output_file']
         del kwargs['communication_ip']
         del kwargs['communication_port']
