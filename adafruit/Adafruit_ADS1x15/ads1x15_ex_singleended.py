@@ -30,9 +30,14 @@ sps = 250  # 250 samples per second
 # sps = 475  # 475 samples per second
 # sps = 860  # 860 samples per second
 
+
+# select address of the ac converter
+address1 = 0x48
+address2 = 0x49
+
 # Initialise the ADC using the default mode (use default I2C address)
 # Set this to ADS1015 or ADS1115 depending on the ADC you are using!
-adc = ADS1x15(ic=ADS1115)
+adc = ADS1x15(address=address2, ic=ADS1015)
 
 # Read channel 0 in single-ended mode using the settings above
 volts = adc.readADCSingleEnded(0, gain, sps) / 1000
