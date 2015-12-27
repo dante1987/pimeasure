@@ -1,7 +1,10 @@
 #!/usr/bin/python
 
-import time, signal, sys
-from Adafruit_ADS1x15 import ADS1x15
+import signal
+import sys
+
+from adafruit.Adafruit_ADS1x15 import ADS1x15
+
 
 def signal_handler(signal, frame):
         print 'You pressed Ctrl+C!'
