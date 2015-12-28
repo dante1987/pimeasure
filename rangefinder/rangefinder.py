@@ -53,5 +53,7 @@ def get_all_values():
 
 
 if __name__ == '__main__':
-    for value in get_all_values():
+    all_values = get_all_values()
+    print(all_values)
+    for value in all_values:
         print("%.6f" % value)
