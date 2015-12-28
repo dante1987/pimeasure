@@ -84,7 +84,7 @@ class PiMeasureDaemon(Daemon):
 
     def action_single(self, checksum):
         self.log('Starting single')
-        values = [str(value) for value in rangefinder.get_all_distances()]
+        values = ["%.3f" % value for value in rangefinder.get_all_distances()]
         to_send = ['0'] + list(values) + [checksum]
         self.log('Sending values for single')
         self.send_values(to_send)
