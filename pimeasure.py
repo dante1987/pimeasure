@@ -178,7 +178,7 @@ class StatusDaemon(Daemon):
 
     def __init__(self, **kwargs):
         self.communication_ip = kwargs['communication_ip']
-        self.communication_port = kwargs['communication_port']
+        self.communication_port = int(kwargs['communication_port'])
         del kwargs['communication_ip']
         del kwargs['communication_port']
         super(StatusDaemon, self).__init__(**kwargs)
