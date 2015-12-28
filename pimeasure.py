@@ -279,7 +279,6 @@ if __name__ == '__main__':
 
     if command == 'start':
         demon.start()
-        status_demon.start()
     elif command == 'stop':
         demon.stop()
         status_demon.stop()
