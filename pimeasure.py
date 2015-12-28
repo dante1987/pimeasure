@@ -32,18 +32,19 @@ def continuous_measure(time_intervals, checksum, communication_data):
     communication_ip = communication_data['ip']
     communication_port = communication_data['port']
 
-    results = rangefinder.get_all_values()
+    results = rangefinder.get_all_distances()
 
-    while not any(result < rangefinder.RANGEFINDER_NO_DETECT_VALUE for result in results):
+    # while not any(result is not None for result in results):
+    while all(result == 0 for result in results):
         time.sleep(0.1)
-        results = rangefinder.get_all_values()
+        results = rangefinder.get_all_distances()
 
     counter = 1
 
     for interval in time_intervals:
         counter += 1
         time.sleep(interval)
-        results = [str(result) for result in rangefinder.get_all_values()]
+        results = ["%.3f" % result for result in rangefinder.get_all_distances()]
         to_send = ['1'] + list(results) + [checksum]
         send_values(to_send, communication_socket, communication_ip, communication_port)
 
@@ -83,7 +84,7 @@ class PiMeasureDaemon(Daemon):
 
     def action_single(self, checksum):
         self.log('Starting single')
-        values = [str(value) for value in rangefinder.get_all_values()]
+        values = [str(value) for value in rangefinder.get_all_distances()]
         to_send = ['0'] + list(values) + [checksum]
         self.log('Sending values for single')
         self.send_values(to_send)
