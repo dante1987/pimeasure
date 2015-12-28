@@ -34,7 +34,8 @@ def continuous_measure(time_intervals, checksum, communication_data):
 
     results = rangefinder.get_all_values()
 
-    while not any(results):
+    while not any(result < rangefinder.RANGEFINDER_NO_DETECT_VALUE for result in results):
+        time.sleep(0.1)
         results = rangefinder.get_all_values()
 
     counter = 1
