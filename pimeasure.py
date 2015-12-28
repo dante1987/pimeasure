@@ -16,10 +16,42 @@ EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication
                         'time_intervals')
 OPTIONAL_CONFIG_KEYS = ('log_file', 'logging_enabled', 'output_file')
 
+STATUS_FILE = '/home/pi/status/statusfile.txt'
+
 
 def send_values(to_send, communication_socket, communication_ip, communication_port):
     message = ';'.join(to_send)
     communication_socket.sendto(message, (communication_ip, communication_port))
+
+
+def send_status_working(communication_socket, communication_ip, communication_port):
+    to_send = ['state', '0', '1']
+    send_values(to_send, communication_socket, communication_ip, communication_port)
+
+
+def send_status_idle(communication_socket, communication_ip, communication_port):
+    to_send = ['state', '0', '0']
+    send_values(to_send, communication_socket, communication_ip, communication_port)
+
+
+def set_status_working():
+    with open(STATUS_FILE, 'w') as fil:
+        fil.write('1')
+
+
+def set_status_idle():
+    with open(STATUS_FILE, 'w') as fil:
+        fil.write('0')
+
+
+def status_working(communication_socket, communication_ip, communication_port):
+    set_status_working()
+    send_status_working(communication_socket, communication_ip, communication_port)
+
+
+def status_idle(communication_socket, communication_ip, communication_port):
+    set_status_idle()
+    send_status_idle(communication_socket, communication_ip, communication_port)
 
 
 def get_time_intervals():
@@ -31,6 +63,7 @@ def continuous_measure(time_intervals, checksum, communication_data):
     communication_socket = communication_data['socket']
     communication_ip = communication_data['ip']
     communication_port = communication_data['port']
+    status_working(communication_socket, communication_ip, communication_port)
 
     results = rangefinder.get_all_distances()
 
@@ -47,6 +80,7 @@ def continuous_measure(time_intervals, checksum, communication_data):
         results = ["%.3f" % result for result in rangefinder.get_all_distances()]
         to_send = ['1'] + list(results) + [checksum]
         send_values(to_send, communication_socket, communication_ip, communication_port)
+    status_idle(communication_socket, communication_ip, communication_port)
 
 
 class PiMeasureDaemon(Daemon):
