@@ -44,6 +44,20 @@ ALL_RANGEFINDERS = [
 RANGEFINDER_NO_DETECT_VALUE = 4.094
 RANGEFINDER_NO_DEVICE = 8.174
 
+LOW_DISTANCE = 0
+HIGH_DISTANCE = 6
+RANGEFINDER_RANGE = 6
+# minimum distance for the rangefinder to start measurement
+MINIMUM_DISTANCE = 2
+
+
+def get_distance(value):
+    if value >= RANGEFINDER_NO_DETECT_VALUE:
+        return None
+    distance = (value/RANGEFINDER_NO_DETECT_VALUE) * HIGH_DISTANCE
+    real_distance = distance + MINIMUM_DISTANCE
+    return real_distance
+
 
 def get_one_value(address=ADDRESS_1, channel=3):
     adc = ADS1x15(address=address, ic=ADS1015)
@@ -52,12 +66,18 @@ def get_one_value(address=ADDRESS_1, channel=3):
 
 
 def get_all_values():
-    all_values = [get_one_value(**parameters) for parameters in ALL_RANGEFINDERS]
-    return all_values
+    all_vals = [get_one_value(**parameters) for parameters in ALL_RANGEFINDERS]
+    return all_vals
+
+
+def get_all_distances():
+    all_vals = get_all_values()
+    all_distances = [get_distance(value) for value in all_vals]
+    return all_distances
 
 
 if __name__ == '__main__':
-    all_values = get_all_values()
+    all_values = get_all_distances()
     print(all_values)
-    for value in all_values:
-        print("%.6f" % value)
+    # for value in all_values:
+    #     print("%.6f" % value)
