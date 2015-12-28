@@ -41,6 +41,10 @@ ALL_RANGEFINDERS = [
 ]
 
 
+RANGEFINDER_NO_DETECT_VALUE = 4.094
+RANGEFINDER_EMPTY_VALUE = 8.174
+
+
 def get_one_value(address=ADDRESS_1, channel=3):
     adc = ADS1x15(address=address, ic=ADS1015)
     volts = adc.readADCSingleEnded(channel, GAIN, SPS) / 1000
