@@ -173,6 +173,37 @@ class PiMeasureDaemon(Daemon):
                 the_file.write(message)
 
 
+class StatusDaemon(Daemon):
+    time_interval = 10
+
+    def __init__(self, **kwargs):
+        self.communication_ip = kwargs['communication_ip']
+        self.communication_port = kwargs['communication_port']
+        del kwargs['communication_ip']
+        del kwargs['communication_port']
+        super(StatusDaemon, self).__init__(**kwargs)
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def is_working(self):
+        with open(STATUS_FILE, 'r') as fil:
+            val = fil.read()
+        if val == '0':
+            return False
+        elif val == '1':
+            return True
+        else:
+            raise ValueError('The value is neither 0 nor 1 - {}'.format(val))
+
+    def run(self):
+        while True:
+            time.sleep(self.time_interval)
+            if self.is_working():
+                send_status_working(self.socket, self.communication_ip, self.communication_port)
+            else:
+                send_status_idle(self.socket, self.communication_ip, self.communication_port)
+
+
 def check_config(config):
     # check if there is required section in the config
     if not config.has_section(CONFIG_SECTION_NAME):
@@ -211,6 +242,11 @@ def get_config_values(config):
 
 if __name__ == '__main__':
 
+    status_dir = '/home/pi/status'
+    status_pidfile = os.path.join(status_dir, 'pidfile.pid')
+    status_stderr = os.path.join(status_dir, 'stderr.txt')
+    status_stdout = os.path.join(status_dir, 'stdout.txt')
+
     parser = argparse.ArgumentParser(description="Process config file path and command")
     parser.add_argument('--config', '-c', dest='config_path', help="Path to the config file", required=True)
     parser.add_argument('--command', '-d', dest='command', choices=['start', 'stop', 'restart', 'status'],
@@ -233,16 +269,31 @@ if __name__ == '__main__':
     configuration = get_config_values(configuration)
 
     demon = PiMeasureDaemon(**configuration)
+    status_demon = StatusDaemon(
+        pidfile=status_pidfile,
+        stdout=status_stdout,
+        stderr=status_stderr,
+        communication_ip=configuration['communication_ip'],
+        communication_port=configuration['communication_port'],
+    )
 
     if command == 'start':
         demon.start()
+        status_demon.start()
     elif command == 'stop':
         demon.stop()
+        status_demon.stop()
     elif command == 'status':
         is_running = demon.get_status()
         if is_running:
             print('The daemon is running')
         else:
             print('The daemon is not running')
+
+        status_is_running = status_demon.get_status()
+        if status_is_running:
+            print('The status daemon is running')
+        else:
+            print('The status daemon is not running')
     else:
         demon.restart()
