@@ -4,7 +4,7 @@ import signal
 import sys
 import time
 
-from adafruit.Adafruit_ADS1x15 import ADS1x15
+from rangefinder.adafruit.Adafruit_ADS1x15 import ADS1x15
 
 
 def signal_handler(signal, frame):
