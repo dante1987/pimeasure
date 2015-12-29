@@ -29,12 +29,12 @@ def send_values(to_send, communication_socket, communication_ip, communication_p
 
 
 def send_status_working(communication_socket, communication_ip, communication_port):
-    to_send = ['state', '0', '1']
+    to_send = ['status', '0', '1']
     send_values(to_send, communication_socket, communication_ip, communication_port)
 
 
 def send_status_idle(communication_socket, communication_ip, communication_port):
-    to_send = ['state', '0', '0']
+    to_send = ['status', '0', '0']
     send_values(to_send, communication_socket, communication_ip, communication_port)
 
 
