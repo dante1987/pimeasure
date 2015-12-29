@@ -79,12 +79,12 @@ def continuous_measure(time_intervals, checksum, communication_data):
     counter = 1
 
     for interval in time_intervals:
-        counter += 1
         time.sleep(interval)
         results = ["%.3f" % result for result in rangefinder.get_all_distances()]
         results = [result.replace('.', ',') for result in results]
-        to_send = ['1'] + list(results) + [checksum]
+        to_send = [str(counter)] + list(results) + [checksum]
         send_values(to_send, communication_socket, communication_ip, communication_port)
+        counter += 1
     status_idle(communication_socket, communication_ip, communication_port)
 
 
