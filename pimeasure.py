@@ -208,10 +208,13 @@ class StatusDaemon(Daemon):
     def run(self):
         while True:
             time.sleep(self.time_interval)
-            if self.is_working():
-                send_status_working(self.socket, self.communication_ip, self.communication_port_send)
-            else:
-                send_status_idle(self.socket, self.communication_ip, self.communication_port_send)
+            try:
+                if self.is_working():
+                    send_status_working(self.socket, self.communication_ip, self.communication_port_send)
+                else:
+                    send_status_idle(self.socket, self.communication_ip, self.communication_port_send)
+            except socket.error:
+                continue
 
 
 def check_config(config):
