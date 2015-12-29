@@ -1,3 +1,4 @@
+import sys
 import os.path
 import ConfigParser
 import argparse
@@ -37,7 +38,7 @@ if __name__ == '__main__':
         stdout=status_stdout,
         stderr=status_stderr,
         communication_ip=configuration['communication_ip'],
-        communication_port=configuration['communication_port'],
+        communication_port_send=configuration['communication_port_send'],
     )
 
     status_demon.start()

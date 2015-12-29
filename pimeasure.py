@@ -12,8 +12,8 @@ from demon.demon import Daemon
 from rangefinder import rangefinder
 
 CONFIG_SECTION_NAME = 'general'
-EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port',
-                        'time_intervals')
+EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port_receive',
+                        'communication_port_send', 'time_intervals')
 OPTIONAL_CONFIG_KEYS = ('log_file', 'logging_enabled', 'output_file')
 
 STATUS_FILE = '/home/pi/status/statusfile.txt'
@@ -87,13 +87,15 @@ class PiMeasureDaemon(Daemon):
     def __init__(self, **kwargs):
         self.output_file = kwargs['output_file']
         self.communication_ip = kwargs['communication_ip']
-        self.communication_port = int(kwargs['communication_port'])
+        self.communication_port_receive = int(kwargs['communication_port_receive'])
+        self.communication_port_send = int(kwargs['communication_port_send'])
         self.time_intervals = [int(interval) for interval in kwargs['time_intervals'].split(',')]
         self.log_file = kwargs.get('log_file')
         self.logging_enabled = self.log_file is not None and bool(int(kwargs.get('logging_enabled', '0')))
         del kwargs['output_file']
         del kwargs['communication_ip']
-        del kwargs['communication_port']
+        del kwargs['communication_port_receive']
+        del kwargs['communication_port_send']
         del kwargs['time_intervals']
         del kwargs['logging_enabled']
         del kwargs['log_file']
@@ -114,7 +116,7 @@ class PiMeasureDaemon(Daemon):
 
     def send_values(self, to_send):
         message = ';'.join(to_send)
-        self.socket.sendto(message, (self.communication_ip, self.communication_port))
+        self.socket.sendto(message, (self.communication_ip, self.communication_port_send))
 
     def action_single(self, checksum):
         self.log('Starting single')
@@ -132,7 +134,7 @@ class PiMeasureDaemon(Daemon):
         communication_data = {
             'socket': self.socket,
             'ip': self.communication_ip,
-            'port': self.communication_port,
+            'port': self.communication_port_send,
         }
         process = Process(target=continuous_measure, args=(self.time_intervals, checksum, communication_data))
         self.log('Starting the process')
@@ -154,8 +156,8 @@ class PiMeasureDaemon(Daemon):
         sys.stderr.write('Wrong method passed on the network: {}'.format(arguments[0]))
 
     def run(self):
-        self.socket.bind(("", self.communication_port))
-        self.log("Listening on port {port}".format(port=self.communication_port))
+        self.socket.bind(("", self.communication_port_receive))
+        self.log("Listening on port {port}".format(port=self.communication_port_receive))
         # change to do here:
         # continuous measure should return process object here
         # do not join immediately - instead listen for data from network
@@ -178,9 +180,9 @@ class StatusDaemon(Daemon):
 
     def __init__(self, **kwargs):
         self.communication_ip = kwargs['communication_ip']
-        self.communication_port = int(kwargs['communication_port'])
+        self.communication_port_send = int(kwargs['communication_port_send'])
         del kwargs['communication_ip']
-        del kwargs['communication_port']
+        del kwargs['communication_port_send']
         super(StatusDaemon, self).__init__(**kwargs)
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -199,9 +201,9 @@ class StatusDaemon(Daemon):
         while True:
             time.sleep(self.time_interval)
             if self.is_working():
-                send_status_working(self.socket, self.communication_ip, self.communication_port)
+                send_status_working(self.socket, self.communication_ip, self.communication_port_send)
             else:
-                send_status_idle(self.socket, self.communication_ip, self.communication_port)
+                send_status_idle(self.socket, self.communication_ip, self.communication_port_send)
 
 
 def check_config(config):
@@ -274,7 +276,8 @@ if __name__ == '__main__':
         stdout=status_stdout,
         stderr=status_stderr,
         communication_ip=configuration['communication_ip'],
-        communication_port=configuration['communication_port'],
+        communication_port_send=configuration['communication_port_send'],
+        communication_port_receive=configuration['communication_port_receive'],
     )
 
     if command == 'start':
