@@ -183,7 +183,7 @@ class PiMeasureDaemon(Daemon):
 
 
 class StatusDaemon(Daemon):
-    time_interval = 10
+    time_interval = 1
 
     def __init__(self, **kwargs):
         self.communication_ip = kwargs['communication_ip']
