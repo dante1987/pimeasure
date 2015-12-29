@@ -24,7 +24,7 @@ SENDING_LOG_FILE = '/home/pi/status/sending.txt'
 def send_values(to_send, communication_socket, communication_ip, communication_port):
     message = ';'.join(to_send)
     with open(SENDING_LOG_FILE, 'a') as fil:
-        fil.write('{ip} - {port} - {message}'.format(ip=communication_ip, port=communication_port, message=message))
+        fil.write('{ip} - {port} - {message}\n'.format(ip=communication_ip, port=communication_port, message=message))
     communication_socket.sendto(message, (communication_ip, communication_port))
 
 
@@ -127,7 +127,8 @@ class PiMeasureDaemon(Daemon):
         values = ["%.3f" % value for value in rangefinder.get_all_distances()]
         to_send = ['0'] + list(values) + [checksum]
         self.log('Sending values for single')
-        self.send_values(to_send)
+        send_values(to_send, self.socket, self.communication_ip, self.communication_port_send)
+        # self.send_values(to_send)
 
     # continuous?
     def action_continous(self, checksum):
