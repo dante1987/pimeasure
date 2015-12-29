@@ -18,9 +18,13 @@ OPTIONAL_CONFIG_KEYS = ('log_file', 'logging_enabled', 'output_file')
 
 STATUS_FILE = '/home/pi/status/statusfile.txt'
 
+SENDING_LOG_FILE = '/home/pi/status/sending.txt'
+
 
 def send_values(to_send, communication_socket, communication_ip, communication_port):
     message = ';'.join(to_send)
+    with open(SENDING_LOG_FILE, 'a') as fil:
+        fil.write('{ip} - {port} - {message}'.format(ip=communication_ip, port=communication_port, message=message))
     communication_socket.sendto(message, (communication_ip, communication_port))
 
 
