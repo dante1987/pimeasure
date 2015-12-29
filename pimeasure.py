@@ -183,6 +183,7 @@ class StatusDaemon(Daemon):
         self.communication_port_send = int(kwargs['communication_port_send'])
         del kwargs['communication_ip']
         del kwargs['communication_port_send']
+        del kwargs['communication_port_receive']
         super(StatusDaemon, self).__init__(**kwargs)
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
