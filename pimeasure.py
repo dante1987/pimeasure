@@ -82,6 +82,7 @@ def continuous_measure(time_intervals, checksum, communication_data):
         counter += 1
         time.sleep(interval)
         results = ["%.3f" % result for result in rangefinder.get_all_distances()]
+        results = [result.replace('.', ',') for result in results]
         to_send = ['1'] + list(results) + [checksum]
         send_values(to_send, communication_socket, communication_ip, communication_port)
     status_idle(communication_socket, communication_ip, communication_port)
@@ -125,6 +126,7 @@ class PiMeasureDaemon(Daemon):
     def action_single(self, checksum):
         self.log('Starting single')
         values = ["%.3f" % value for value in rangefinder.get_all_distances()]
+        values = [value.replace('.', ',') for value in values]
         to_send = ['0'] + list(values) + [checksum]
         self.log('Sending values for single')
         send_values(to_send, self.socket, self.communication_ip, self.communication_port_send)
