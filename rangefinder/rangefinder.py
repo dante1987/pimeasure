@@ -24,12 +24,42 @@ ADS1015 = 0x00
 ADDRESS_1 = 0x48
 ADDRESS_2 = 0x49
 
+# sensor properties
+RANGEFINDER_NO_DEVICE = 8.174
+
+# sensor type 1
+SENSOR1_NO_DETECT_VALUE = 0
+SENSOR1_LOW_DISTANCE = 0
+SENSOR1_HIGH_DISTANCE = 50
+SENSOR1_RANGE = 50
+SENSOR1_MINIMUM_DISTANCE = 35
+SENSOR1_INVERT = True
+
+# sensor type 2
+SENSOR2_NO_DETECT_VALUE = 4.094
+SENSOR2_LOW_DISTANCE = 0
+SENSOR2_HIGH_DISTANCE = 6
+SENSOR2_RANGE = 6
+SENSOR2_MINIMUM_DISTANCE = 2
+SENSOR2_INVERT = False
+# minimum distance for the rangefinder to start measurement
+
 RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3}
 RANGEFINDER_1 = {'address': ADDRESS_1, 'channel': 2}
 RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1}
 RANGEFINDER_3 = {'address': ADDRESS_1, 'channel': 0}
 RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3}
 RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2}
+
+# sensor type 1
+RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
+RANGEFINDER_1 = {'address': ADDRESS_1, 'channel': 2, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
+RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
+RANGEFINDER_3 = {'address': ADDRESS_1, 'channel': 0, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
+
+# sensor type 2
+RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT}
+RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT}
 
 ALL_RANGEFINDERS = [
     RANGEFINDER_0,
@@ -41,21 +71,19 @@ ALL_RANGEFINDERS = [
 ]
 
 
-RANGEFINDER_NO_DETECT_VALUE = 4.094
-RANGEFINDER_NO_DEVICE = 8.174
-
-LOW_DISTANCE = 0
-HIGH_DISTANCE = 6
-RANGEFINDER_RANGE = 6
-# minimum distance for the rangefinder to start measurement
-MINIMUM_DISTANCE = 2
-
-
 def get_distance(value):
     if value >= RANGEFINDER_NO_DETECT_VALUE:
         return 0
     distance = (value/RANGEFINDER_NO_DETECT_VALUE) * HIGH_DISTANCE
     real_distance = distance + MINIMUM_DISTANCE
+    return real_distance
+
+
+def get_distance(value, no_detect_val, max_distance, minimum_distance=0, invert=False):
+    if value >= no_detect_val:
+        return 0
+    distance = (value/no_detect_val) * max_distance
+    real_distance = distance + minimum_distance
     return real_distance
 
 
@@ -66,18 +94,32 @@ def get_one_value(address=ADDRESS_1, channel=3):
 
 
 def get_all_values():
-    all_vals = [get_one_value(**parameters) for parameters in ALL_RANGEFINDERS]
+    all_vals = [get_one_value(parameters['address'], parameters['channel']) for parameters in ALL_RANGEFINDERS]
     return all_vals
 
 
-def get_all_distances():
-    all_vals = get_all_values()
-    all_distances = [get_distance(value) for value in all_vals]
-    return all_distances
+# def get_all_distances():
+#     all_vals = get_all_values()
+#     all_distances = [get_distance(value) for value in all_vals]
+#     return all_distances
+
+
+# def get_all_distances():
+#     all_distances = [
+#         get_distance(
+#             get_one_value(sensor['address'], sensor['channel']),
+#             sensor['no_detect_val'],
+#             sensor['max_distance'],
+#             sensor['minimum_distance'],
+#             sensor['invert'])
+#         for sensor in ALL_RANGEFINDERS
+#     ]
+#     return all_distances
 
 
 if __name__ == '__main__':
-    all_values = get_all_distances()
-    print(all_values)
-    for value in all_values:
-        print("%.6f" % value)
+    # all_values = get_all_distances()
+    # print(all_values)
+    # for value in all_values:
+    #     print("%.6f" % value)
+    print(get_all_values())
