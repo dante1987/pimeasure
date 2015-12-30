@@ -52,14 +52,14 @@ RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3}
 RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2}
 
 # sensor type 1
-RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
-RANGEFINDER_1 = {'address': ADDRESS_1, 'channel': 2, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
-RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
-RANGEFINDER_3 = {'address': ADDRESS_1, 'channel': 0, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT}
+RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.354, 'mv_per_mm': 0.0915}
+RANGEFINDER_1 = {'address': ADDRESS_1, 'channel': 2, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.348, 'mv_per_mm': 0.087}
+RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.52, 'mv_per_mm': 0.088}
+RANGEFINDER_3 = {'address': ADDRESS_1, 'channel': 0, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.286, 'mv_per_mm': 0.09}
 
 # sensor type 2
-RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT}
-RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT}
+RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT, 'minimum_value': SENSOR2_NO_DETECT_VALUE, 'mv_per_mm': 0.714}
+RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT, 'minimum_value': SENSOR2_NO_DETECT_VALUE, 'mv_per_mm': 0.714}
 
 ALL_RANGEFINDERS = [
     RANGEFINDER_0,
@@ -71,19 +71,11 @@ ALL_RANGEFINDERS = [
 ]
 
 
-def get_distance(value):
-    if value >= RANGEFINDER_NO_DETECT_VALUE:
-        return 0
-    distance = (value/RANGEFINDER_NO_DETECT_VALUE) * HIGH_DISTANCE
-    real_distance = distance + MINIMUM_DISTANCE
-    return real_distance
-
-
-def get_distance(value, no_detect_val, max_distance, minimum_distance=0, invert=False):
-    if value >= no_detect_val:
-        return 0
-    distance = (value/no_detect_val) * max_distance
-    real_distance = distance + minimum_distance
+def get_distance(value, no_detect_val, max_distance, minimum_distance=0, minimum_value=0.354, mv_per_mm=0.91, invert=False):
+    if invert:
+        real_distance = (value - minimum_value) / mv_per_mm
+    else:
+        real_distance = (minimum_value - value) / mv_per_mm
     return real_distance
 
 
@@ -98,23 +90,17 @@ def get_all_values():
     return all_vals
 
 
-# def get_all_distances():
-#     all_vals = get_all_values()
-#     all_distances = [get_distance(value) for value in all_vals]
-#     return all_distances
-
-
-# def get_all_distances():
-#     all_distances = [
-#         get_distance(
-#             get_one_value(sensor['address'], sensor['channel']),
-#             sensor['no_detect_val'],
-#             sensor['max_distance'],
-#             sensor['minimum_distance'],
-#             sensor['invert'])
-#         for sensor in ALL_RANGEFINDERS
-#     ]
-#     return all_distances
+def get_all_distances():
+    all_distances = [
+        get_distance(
+            get_one_value(sensor['address'], sensor['channel']),
+            sensor['no_detect_val'],
+            sensor['max_distance'],
+            sensor['minimum_distance'],
+            sensor['invert'])
+        for sensor in ALL_RANGEFINDERS
+    ]
+    return all_distances
 
 
 if __name__ == '__main__':
@@ -123,3 +109,4 @@ if __name__ == '__main__':
     # for value in all_values:
     #     print("%.6f" % value)
     print(get_all_values())
+    print(get_all_distances())
