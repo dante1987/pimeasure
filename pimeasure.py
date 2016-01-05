@@ -62,6 +62,14 @@ def get_time_intervals():
     return [1, 2, 3, 4, 5]
 
 
+def measurement_started(values):
+    left_down_value = values[0]
+    right_down_value = values[2]
+    left_down_minimum = rangefinder.RANGEFINDER_0['minimum_value']
+    right_down_minimum = rangefinder.RANGEFINDER_2['minimum_value']
+    return left_down_value > left_down_minimum or right_down_value > right_down_minimum
+
+
 def continuous_measure(time_intervals, checksum, communication_data):
     # this method needs its own sender class to not have to communicate with the main process
     communication_socket = communication_data['socket']
@@ -72,7 +80,7 @@ def continuous_measure(time_intervals, checksum, communication_data):
     results = rangefinder.get_all_distances()
 
     # while not any(result is not None for result in results):
-    while all(result == 0 for result in results):
+    while not measurement_started(results):
         time.sleep(0.1)
         results = rangefinder.get_all_distances()
 
