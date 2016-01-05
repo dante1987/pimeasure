@@ -74,7 +74,7 @@ ALL_RANGEFINDERS = [
 def get_distance(value, no_detect_val, max_distance, minimum_distance=0, minimum_value=0.354, mv_per_mm=0.91, invert=False):
     if invert:
         # Four sensors with "invertion" needs to send values multiplied by 10
-        real_distance = ((value - minimum_value) / mv_per_mm) * 10
+        real_distance = (value - minimum_value) / mv_per_mm
     else:
         real_distance = (minimum_value - value) / mv_per_mm
     return real_distance
