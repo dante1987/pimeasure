@@ -21,6 +21,8 @@ STATUS_FILE = '/home/pi/status/statusfile.txt'
 
 SENDING_LOG_FILE = '/home/pi/status/sending.txt'
 
+MEASURE_THRESHOLD = 0.8
+
 
 def send_values(to_send, communication_socket, communication_ip, communication_port):
     message = ';'.join(to_send)
@@ -71,9 +73,9 @@ def blink():
 def measurement_started(values):
     left_down_value = values[0]
     right_down_value = values[2]
-    left_down_minimum = rangefinder.RANGEFINDER_0['minimum_value']
-    right_down_minimum = rangefinder.RANGEFINDER_2['minimum_value']
-    return left_down_value > left_down_minimum or right_down_value > right_down_minimum
+    left_down_minimum = MEASURE_THRESHOLD
+    right_down_minimum = MEASURE_THRESHOLD
+    return left_down_value > left_down_minimum and right_down_value > right_down_minimum
 
 
 def continuous_measure(time_intervals, checksum, communication_data):
@@ -88,7 +90,7 @@ def continuous_measure(time_intervals, checksum, communication_data):
     # while not any(result is not None for result in results):
     while not measurement_started(results):
         time.sleep(0.1)
-        results = rangefinder.get_all_distances()
+        results = rangefinder.get_all_values()
 
     blink()
     counter = 1
