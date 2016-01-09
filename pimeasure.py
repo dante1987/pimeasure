@@ -10,6 +10,7 @@ from multiprocessing import Process
 
 from demon.demon import Daemon
 from rangefinder import rangefinder
+from led import led
 
 CONFIG_SECTION_NAME = 'general'
 EXPECTED_CONFIG_KEYS = ('pidfile', 'workdir', 'stdout', 'stderr', 'communication_ip', 'communication_port_receive',
@@ -62,6 +63,11 @@ def get_time_intervals():
     return [1, 2, 3, 4, 5]
 
 
+def blink():
+    process = Process(target=led.led_blink)
+    process.start()
+
+
 def measurement_started(values):
     left_down_value = values[0]
     right_down_value = values[2]
@@ -84,10 +90,12 @@ def continuous_measure(time_intervals, checksum, communication_data):
         time.sleep(0.1)
         results = rangefinder.get_all_distances()
 
+    blink()
     counter = 1
 
     for interval in time_intervals:
         time.sleep(interval)
+        blink()
         results = ["%.3f" % result for result in rangefinder.get_all_distances()]
         results = [result.replace('.', ',') for result in results]
         to_send = [str(counter)] + list(results) + [checksum]
@@ -133,6 +141,7 @@ class PiMeasureDaemon(Daemon):
 
     def action_single(self, checksum):
         self.log('Starting single')
+        blink()
         values = ["%.3f" % value for value in rangefinder.get_all_distances()]
         values = [value.replace('.', ',') for value in values]
         to_send = ['0'] + list(values) + [checksum]
