@@ -71,8 +71,8 @@ def blink():
 
 
 def measurement_started(values):
-    left_down_value = values[0]
-    right_down_value = values[2]
+    left_down_value = values[2]
+    right_down_value = values[3]
     left_down_minimum = MEASURE_THRESHOLD
     right_down_minimum = MEASURE_THRESHOLD
     return left_down_value > left_down_minimum and right_down_value > right_down_minimum
