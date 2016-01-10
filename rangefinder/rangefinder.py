@@ -52,7 +52,7 @@ RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3}
 RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2}
 
 # sensor type 1
-RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.354, 'mv_per_mm': 0.0899}
+RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.354, 'mv_per_mm': 1}
 RANGEFINDER_1 = {'address': ADDRESS_1, 'channel': 2, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.348, 'mv_per_mm': 0.0921}
 RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.52, 'mv_per_mm': 0.0915}
 RANGEFINDER_3 = {'address': ADDRESS_1, 'channel': 0, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.286, 'mv_per_mm': 0.0908}
