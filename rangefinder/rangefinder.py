@@ -46,12 +46,12 @@ SENSOR2_INVERT = False
 # sensor type 1
 RANGEFINDER_0 = {'address': ADDRESS_1, 'channel': 3, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.354, 'mv_per_mm': 0.0882}
 RANGEFINDER_1 = {'address': ADDRESS_1, 'channel': 2, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.348, 'mv_per_mm': 0.0895}
-RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.52, 'mv_per_mm': 0.0915}
+RANGEFINDER_2 = {'address': ADDRESS_1, 'channel': 1, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.52, 'mv_per_mm': 0.0951}
 RANGEFINDER_3 = {'address': ADDRESS_1, 'channel': 0, 'no_detect_val': SENSOR1_NO_DETECT_VALUE, 'max_distance': SENSOR1_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR1_INVERT, 'minimum_value': 0.286, 'mv_per_mm': 0.0908}
 
 # sensor type 2
-RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT, 'minimum_value': SENSOR2_NO_DETECT_VALUE, 'mv_per_mm': 0.784}
-RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT, 'minimum_value': SENSOR2_NO_DETECT_VALUE, 'mv_per_mm': 0.822}
+RANGEFINDER_4 = {'address': ADDRESS_2, 'channel': 3, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT, 'minimum_value': SENSOR2_NO_DETECT_VALUE, 'mv_per_mm': 0.862}
+RANGEFINDER_5 = {'address': ADDRESS_2, 'channel': 2, 'no_detect_val': SENSOR2_NO_DETECT_VALUE, 'max_distance': SENSOR2_HIGH_DISTANCE, 'minimum_distance': 0, 'invert': SENSOR2_INVERT, 'minimum_value': SENSOR2_NO_DETECT_VALUE, 'mv_per_mm': 0.904}
 
 ALL_RANGEFINDERS = [
     RANGEFINDER_0,
