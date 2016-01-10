@@ -66,6 +66,7 @@ ALL_RANGEFINDERS = [
 def get_distance(value, minimum_value=0.354, mv_per_mm=0.91, invert=False):
     if invert:
         real_distance = (value - minimum_value) / (mv_per_mm * 10)
+        real_distance = real_distance * -1
     else:
         real_distance = (minimum_value - value) / mv_per_mm
     return real_distance
